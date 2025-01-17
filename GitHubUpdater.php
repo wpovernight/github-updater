@@ -386,9 +386,7 @@ class GitHubUpdater
 	 * @param object $args ['slug' => 'ryansechrest-github-updater-demo', ...]
 	 * @return array|false|object ['name' => 'GitHub Updater Demo', ...]
 	 */
-	public function _buildPluginDetailsResult(
-		array|false|object $result, string $action, object $args
-	): array|false|object
+	public function _buildPluginDetailsResult( $result, string $action, object $args )
 	{
 		// If action is query_plugins, hot_tags, or hot_categories, exit
 		if ($action !== 'plugin_information') return $result;
@@ -827,7 +825,7 @@ class GitHubUpdater
 	 * @param array $options ['plugin' => 'github-updater-demo/github-updater-demo.php', ...]
 	 * @return array|WP_Error
 	 */
-	public function _moveUpdatedPlugin(array|WP_Error $result, array $options): array|WP_Error
+	public function _moveUpdatedPlugin( $result, array $options)
 	{
 		// Check if $result is a WP_Error and return it if true
 		if ( is_wp_error( $result ) ) {
