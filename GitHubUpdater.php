@@ -551,9 +551,7 @@ class GitHubUpdater
 	 * @param string $file github-updater-demo/github-updater-demo.php
 	 * @return array|false
 	 */
-	public function _checkPluginUpdates(
-		array|false $update, array $data, string $file
-	): array|false
+	public function _checkPluginUpdates( $update, array $data, string $file )
 	{
 		// If plugin does not match this plugin, exit
 		if ($file !== $this->pluginFile) return $update;
