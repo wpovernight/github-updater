@@ -1349,7 +1349,7 @@ class GitHubUpdater
 	 * @param string $message Plugins data
 	 * @return void
 	 */
-	private function log(string $message,): void
+	private function log( string $message ): void
 	{
 		if (!$this->enableDebugger || !WP_DEBUG || !WP_DEBUG_LOG) return;
 
