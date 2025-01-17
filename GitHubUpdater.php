@@ -823,30 +823,34 @@ class GitHubUpdater
 	/**
 	 * Hook to move updated plugin.
 	 *
-	 * @param array $result ['destination' => '.../wp-content/plugins/github-updater-demo-main', ...]
+	 * @param array|WP_Error $result ['destination' => '.../wp-content/plugins/github-updater-demo-main', ...]
 	 * @param array $options ['plugin' => 'github-updater-demo/github-updater-demo.php', ...]
-	 * @return array
+	 * @return array|WP_Error
 	 */
-	public function _moveUpdatedPlugin(array $result, array $options): array
+	public function _moveUpdatedPlugin(array|WP_Error $result, array $options): array|WP_Error
 	{
+		// Check if $result is a WP_Error and return it if true
+		if ( is_wp_error( $result ) ) {
+			$this->log( 'WP_Error encountered in _moveUpdatedPlugin: ' . $result->get_error_message() );
+			return $result;
+		}
+
 		// Get plugin being updated
 		// e.g. `github-updater-demo/github-updater-demo.php`
 		$pluginFile = $options['plugin'] ?? '';
 
 		// If plugin does not match this plugin, exit
-		if ($pluginFile !== $this->pluginFile) return $result;
+		if ( $pluginFile !== $this->pluginFile ) {
+			return $result;
+		}
 
-		$this->logStart(
-			'_moveUpdatedPlugin', 'upgrader_install_package_result'
-		);
+		$this->logStart( '_moveUpdatedPlugin', 'upgrader_install_package_result' );
 
 		// Save path to new plugin
 		// e.g. `.../wp-content/plugins/github-updater-demo-main`
 		$newPluginPath = $result['destination'] ?? '';
 
-		$this->log(
-			'Does $newPluginPath (' . $newPluginPath . ') exist...'
-		);
+		$this->log( 'Does $newPluginPath (' . $newPluginPath . ') exist...' );
 
 		// If path to new plugin doesn't exist, exit
 		if (!$newPluginPath) {
