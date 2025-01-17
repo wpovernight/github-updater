@@ -1004,19 +1004,16 @@ class GitHubUpdater
 	 * @param string $contents
 	 * @return array ['Version' => '1.0.0.', ...]
 	 */
-	private function extractPluginHeaderFields(
-		array $fields, string $contents
-	): array
+	private function extractPluginHeaderFields( array $fields, string $contents ): array
 	{
-		$values = [];
+		$values = array();
 
-		foreach ($fields as $field => $type) {
-
-			// Select regex based on specified field type
-			$regex = match ($type) {
-				'version' => '\d+(\.\d+){0,2}',
-				default => '.+',
-			};
+		foreach ( $fields as $field => $type ) {
+			$regex = '.+';
+			
+			if ( 'version' === $type ) {
+				$regex = '\d+(\.\d+){0,2}';
+			}
 
 			// Extract field value using selected regex
 			preg_match(
@@ -1026,10 +1023,10 @@ class GitHubUpdater
 			);
 
 			// Always return field with a value
-			$values[$field] = $matches[1] ?? '';
+			$values[ $field ] = $matches[1] ?? '';
 
 			// Remove possible leading or trailing whitespace
-			$values[$field] = trim($values[$field]);
+			$values[ $field ] = trim( $values[ $field ] );
 		}
 
 		return $values;
