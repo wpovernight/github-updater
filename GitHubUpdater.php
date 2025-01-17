@@ -1040,27 +1040,42 @@ class GitHubUpdater
 	 * @param string $markdown # Changelog
 	 * @return string <h1>Changelog</h1>
 	 */
-	private function convertMarkdownToHtml(string $markdown): string
+	private function convertMarkdownToHtml( string $markdown ): string
 	{
-		$html = [];
-		$lines = explode(PHP_EOL, $markdown);
+		$html  = array();
+		$lines = explode( PHP_EOL, $markdown );
 		$index = 0;
 
-		while (isset($lines[$index])) {
-			$line = trim($lines[$index]);
-			$element = match ($this->getMarkdownBlockType($line)) {
-				'header' => $this->convertMarkdownHeader($line),
-				'list' => $this->convertMarkdownList($index, $lines),
-				'blockquote' => $this->convertMarkdownBlockquote($line),
-				'code' => $this->convertMarkdownCode($index, $lines),
-				'paragraph' => $this->convertMarkdownParagraph($line),
-				default => [$line],
-			};
-			$html = array_merge($html, $element);
+		while ( isset( $lines[ $index ] ) ) {
+			$line    = trim( $lines[ $index ]);
+			$element = array();
+
+			switch ( $this->getMarkdownBlockType( $line ) ) {
+				case 'header':
+					$element = $this->convertMarkdownHeader( $line );
+					break;
+				case 'list':
+					$element = $this->convertMarkdownList( $index, $lines );
+					break;
+				case 'blockquote':
+					$element = $this->convertMarkdownBlockquote( $line );
+					break;
+				case 'code':
+					$element = $this->convertMarkdownCode( $index, $lines );
+					break;
+				case 'paragraph':
+					$element = $this->convertMarkdownParagraph( $line );
+					break;
+				default:
+					$element = [ $line ];
+					break;
+			}
+
+			$html = array_merge( $html, $element );
 			$index++;
 		}
 
-		return implode(PHP_EOL, $html);
+		return implode( PHP_EOL, $html );
 	}
 
 	/**
