@@ -386,9 +386,7 @@ class GitHubUpdater
 	 * @param object $args ['slug' => 'ryansechrest-github-updater-demo', ...]
 	 * @return array|false|object ['name' => 'GitHub Updater Demo', ...]
 	 */
-	public function _buildPluginDetailsResult(
-		array|false|object $result, string $action, object $args
-	): array|false|object
+	public function _buildPluginDetailsResult( $result, string $action, object $args )
 	{
 		// If action is query_plugins, hot_tags, or hot_categories, exit
 		if ($action !== 'plugin_information') return $result;
@@ -553,9 +551,7 @@ class GitHubUpdater
 	 * @param string $file github-updater-demo/github-updater-demo.php
 	 * @return array|false
 	 */
-	public function _checkPluginUpdates(
-		array|false $update, array $data, string $file
-	): array|false
+	public function _checkPluginUpdates( $update, array $data, string $file )
 	{
 		// If plugin does not match this plugin, exit
 		if ($file !== $this->pluginFile) return $update;
@@ -823,30 +819,34 @@ class GitHubUpdater
 	/**
 	 * Hook to move updated plugin.
 	 *
-	 * @param array $result ['destination' => '.../wp-content/plugins/github-updater-demo-main', ...]
+	 * @param array|WP_Error $result ['destination' => '.../wp-content/plugins/github-updater-demo-main', ...]
 	 * @param array $options ['plugin' => 'github-updater-demo/github-updater-demo.php', ...]
-	 * @return array
+	 * @return array|WP_Error
 	 */
-	public function _moveUpdatedPlugin(array $result, array $options): array
+	public function _moveUpdatedPlugin( $result, array $options)
 	{
+		// Check if $result is a WP_Error and return it if true
+		if ( is_wp_error( $result ) ) {
+			$this->log( 'WP_Error encountered in _moveUpdatedPlugin: ' . $result->get_error_message() );
+			return $result;
+		}
+
 		// Get plugin being updated
 		// e.g. `github-updater-demo/github-updater-demo.php`
 		$pluginFile = $options['plugin'] ?? '';
 
 		// If plugin does not match this plugin, exit
-		if ($pluginFile !== $this->pluginFile) return $result;
+		if ( $pluginFile !== $this->pluginFile ) {
+			return $result;
+		}
 
-		$this->logStart(
-			'_moveUpdatedPlugin', 'upgrader_install_package_result'
-		);
+		$this->logStart( '_moveUpdatedPlugin', 'upgrader_install_package_result' );
 
 		// Save path to new plugin
 		// e.g. `.../wp-content/plugins/github-updater-demo-main`
 		$newPluginPath = $result['destination'] ?? '';
 
-		$this->log(
-			'Does $newPluginPath (' . $newPluginPath . ') exist...'
-		);
+		$this->log( 'Does $newPluginPath (' . $newPluginPath . ') exist...' );
 
 		// If path to new plugin doesn't exist, exit
 		if (!$newPluginPath) {
@@ -1004,19 +1004,16 @@ class GitHubUpdater
 	 * @param string $contents
 	 * @return array ['Version' => '1.0.0.', ...]
 	 */
-	private function extractPluginHeaderFields(
-		array $fields, string $contents
-	): array
+	private function extractPluginHeaderFields( array $fields, string $contents ): array
 	{
-		$values = [];
+		$values = array();
 
-		foreach ($fields as $field => $type) {
-
-			// Select regex based on specified field type
-			$regex = match ($type) {
-				'version' => '\d+(\.\d+){0,2}',
-				default => '.+',
-			};
+		foreach ( $fields as $field => $type ) {
+			$regex = '.+';
+			
+			if ( 'version' === $type ) {
+				$regex = '\d+(\.\d+){0,2}';
+			}
 
 			// Extract field value using selected regex
 			preg_match(
@@ -1026,10 +1023,10 @@ class GitHubUpdater
 			);
 
 			// Always return field with a value
-			$values[$field] = $matches[1] ?? '';
+			$values[ $field ] = $matches[1] ?? '';
 
 			// Remove possible leading or trailing whitespace
-			$values[$field] = trim($values[$field]);
+			$values[ $field ] = trim( $values[ $field ] );
 		}
 
 		return $values;
@@ -1043,27 +1040,42 @@ class GitHubUpdater
 	 * @param string $markdown # Changelog
 	 * @return string <h1>Changelog</h1>
 	 */
-	private function convertMarkdownToHtml(string $markdown): string
+	private function convertMarkdownToHtml( string $markdown ): string
 	{
-		$html = [];
-		$lines = explode(PHP_EOL, $markdown);
+		$html  = array();
+		$lines = explode( PHP_EOL, $markdown );
 		$index = 0;
 
-		while (isset($lines[$index])) {
-			$line = trim($lines[$index]);
-			$element = match ($this->getMarkdownBlockType($line)) {
-				'header' => $this->convertMarkdownHeader($line),
-				'list' => $this->convertMarkdownList($index, $lines),
-				'blockquote' => $this->convertMarkdownBlockquote($line),
-				'code' => $this->convertMarkdownCode($index, $lines),
-				'paragraph' => $this->convertMarkdownParagraph($line),
-				default => [$line],
-			};
-			$html = array_merge($html, $element);
+		while ( isset( $lines[ $index ] ) ) {
+			$line    = trim( $lines[ $index ]);
+			$element = array();
+
+			switch ( $this->getMarkdownBlockType( $line ) ) {
+				case 'header':
+					$element = $this->convertMarkdownHeader( $line );
+					break;
+				case 'list':
+					$element = $this->convertMarkdownList( $index, $lines );
+					break;
+				case 'blockquote':
+					$element = $this->convertMarkdownBlockquote( $line );
+					break;
+				case 'code':
+					$element = $this->convertMarkdownCode( $index, $lines );
+					break;
+				case 'paragraph':
+					$element = $this->convertMarkdownParagraph( $line );
+					break;
+				default:
+					$element = [ $line ];
+					break;
+			}
+
+			$html = array_merge( $html, $element );
 			$index++;
 		}
 
-		return implode(PHP_EOL, $html);
+		return implode( PHP_EOL, $html );
 	}
 
 	/**
@@ -1337,7 +1349,7 @@ class GitHubUpdater
 	 * @param string $message Plugins data
 	 * @return void
 	 */
-	private function log(string $message,): void
+	private function log( string $message ): void
 	{
 		if (!$this->enableDebugger || !WP_DEBUG || !WP_DEBUG_LOG) return;
 
