@@ -725,7 +725,7 @@ class GitHubUpdater
 			(string) $pluginData['version']   // => "1.0.5"
 		);
 	}
-	
+
 	/**
 	 * Get path to private remote plugin ZIP file.
 	 *
