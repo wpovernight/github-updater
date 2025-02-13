@@ -298,17 +298,17 @@ class GitHubUpdater
 		$pluginData = get_file_data(
 			WP_PLUGIN_DIR . '/' . $this->file, // modified by WP Overnight
 			[
-				'PluginURI' => 'Plugin URI',
-				'Version' => 'Version',
+				'PluginURI'  => 'Plugin URI',
+				'Version'    => 'Version',
 				'TestedUpTo' => 'Tested up to',
-				'UpdateURI' => 'Update URI',
+				'UpdateURI'  => 'Update URI',
 			]
 		);
 
 		// Extract fields from plugin header
-		$pluginUri = $pluginData['PluginURI'] ?? '';
-		$updateUri = $pluginData['UpdateURI'] ?? '';
-		$version = $pluginData['Version'] ?? '';
+		$pluginUri  = $pluginData['PluginURI']  ?? '';
+		$updateUri  = $pluginData['UpdateURI']  ?? '';
+		$version    = $pluginData['Version']    ?? '';
 		$testedUpTo = $pluginData['TestedUpTo'] ?? '';
 
 		// If required fields were not set, exit
@@ -585,14 +585,15 @@ class GitHubUpdater
 
 		// Build plugin data response for WordPress
 		$pluginData = [
-			'id' => $this->gitHubUrl,
-			'slug' => $this->pluginSlug,
-			'plugin' => $this->pluginFile,
+			'id'      => $this->gitHubUrl,
+			'slug'    => $this->pluginSlug,
+			'plugin'  => $this->pluginFile,
 			'version' => $fields['Version'],
-			'url' => $this->pluginUrl,
-			'package' => $this->getRemotePluginZipFile(),
-			'tested' => $this->testedUpTo,
+			'url'     => $this->pluginUrl,
+			'tested'  => $this->testedUpTo,
 		];
+		
+		$pluginData['package'] = $this->getRemotePluginZipFile( $pluginData );
 
 		$pluginIcon = $this->getPluginIcon();
 
@@ -709,30 +710,22 @@ class GitHubUpdater
 
 	/**
 	 * Get path to remote plugin ZIP file.
+	 * 
+	 * @param array $pluginData
 	 *
 	 * @return string https://github.com/ryansechrest/github-updater-demo/archive/refs/heads/main.zip
 	 */
-	private function getRemotePluginZipFile(): string
-	{
-		return $this->gitHubAccessToken
-			? $this->getPrivateRemotePluginZipFile()
-			: $this->getPublicRemotePluginZipFile();
-	}
-
-	/**
-	 * Get path to public remote plugin ZIP file.
-	 *
-	 * @return string https://github.com/ryansechrest/github-updater-demo/archive/refs/heads/main.zip
-	 */
-	private function getPublicRemotePluginZipFile(): string
+	private function getRemotePluginZipFile( array $pluginData ): string
 	{
 		return sprintf(
-			'https://github.com/%s/archive/refs/heads/%s.zip',
-			$this->gitHubPath,
-			$this->gitHubBranch
+			'%s/releases/download/v%s/%s.%s.zip',
+			rtrim( $pluginData['url'], '/' ), // => "https://github.com/wpovernight/wpo-ips-xrechnung"
+			(string) $pluginData['version'],  // => "1.0.5" (the tag name)
+			$this->gitHubRepo,                // => "wpo-ips-xrechnung"
+			(string) $pluginData['version']   // => "1.0.5"
 		);
 	}
-
+	
 	/**
 	 * Get path to private remote plugin ZIP file.
 	 *
