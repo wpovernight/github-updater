@@ -8,7 +8,7 @@ namespace WPO\GitHubUpdater;
  *
  * @author Ryan Sechrest (modified by WP Overnight)
  * @package WPO\GitHubUpdater
- * @version 1.1.2
+ * @version 1.1.3
  */
 class GitHubUpdater
 {
