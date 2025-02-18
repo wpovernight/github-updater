@@ -1373,7 +1373,7 @@ class GitHubUpdater
 	 * @param mixed $value ['version' => '1.0.0', ...]
 	 * @return void
 	 */
-	private function logValue(string $label, mixed $value): void
+	private function logValue(string $label, $value): void
 	{
 		if (!is_string($value)) {
 			$value = var_export($value, true);
