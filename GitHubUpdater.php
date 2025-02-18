@@ -269,7 +269,7 @@ class GitHubUpdater
 	public function add(): void
 	{
 		$this->buildPluginDetailsResult();
-		//$this->logPluginDetailsResult();;
+		//$this->logPluginDetailsResult();
 		$this->checkPluginUpdates();
 		$this->prepareHttpRequestArgs();
 		$this->moveUpdatedPlugin();
@@ -294,16 +294,18 @@ class GitHubUpdater
 	 */
 	private function load(): void
 	{
+		
 		// Fields from plugin header
-		$pluginData = get_file_data(
-			WP_PLUGIN_DIR . '/' . $this->file, // modified by WP Overnight
-			[
-				'PluginURI'  => 'Plugin URI',
-				'Version'    => 'Version',
-				'TestedUpTo' => 'Tested up to',
-				'UpdateURI'  => 'Update URI',
-			]
-		);
+		$pluginPath = strpos($this->file, WP_PLUGIN_DIR) === false 
+			? WP_PLUGIN_DIR . '/' . ltrim($this->file, '/') 
+			: $this->file;
+
+		$pluginData = get_file_data($pluginPath, [
+			'PluginURI'  => 'Plugin URI',
+			'Version'    => 'Version',
+			'TestedUpTo' => 'Tested up to',
+			'UpdateURI'  => 'Update URI',
+		]);
 
 		// Extract fields from plugin header
 		$pluginUri  = $pluginData['PluginURI']  ?? '';
@@ -643,8 +645,14 @@ class GitHubUpdater
 		// Get public remote plugin file containing plugin header,
 		// e.g. `https://raw.githubusercontent.com/ryansechrest/github-updater-demo/main/github-updater-demo.php`
 		$remoteFile = $this->getPublicRemotePluginFile($filename);
+		$response   = wp_remote_get($remoteFile);
 
-		return wp_remote_retrieve_body(wp_remote_get($remoteFile));
+		if (is_wp_error($response)) {
+			error_log('GitHubUpdater: Failed to fetch remote file: ' . $response->get_error_message());
+			return '';
+		}
+
+		return wp_remote_retrieve_body($response);
 	}
 
 	/**
